@@ -2,7 +2,6 @@ name: Build PvPHelper
 
 on:
   workflow_dispatch:
-  push:
 
 jobs:
   build:
@@ -18,14 +17,19 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - name: Extract project
+        run: |
+          unzip -q *.zip -d project
+          find project -name build.gradle -exec dirname {} \; | head -1
 
       - name: Build
-        run: gradle build
+        run: |
+          PROJECT=$(dirname "$(find project -name build.gradle | head -1)")
+          cd "$PROJECT"
+          gradle build
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: PvPHelper-JAR
-          path: build/libs/*.jar
+          path: project/**/build/libs/*.jar
